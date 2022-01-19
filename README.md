@@ -400,8 +400,8 @@ $ pnpm add @swc/core @swc/helpers --save-dev
 
 Don't worry if you don't, `rollup-plugin-ts` will warn you about exactly which dependencies are missing once you run it.
 
-Once you're done installing peer dependencies, that's it! The plugin will attempt to locate a `.swcrc` file and use the options found there.
-By default, some combination of options will be applied depending on the config options you provide, while others will be forced at all times for interoperability reasons. See [this section](#default-babel-plugins) for more details.
+Once you're done installing peer dependencies, that's it! The plugin will attempt to locate a `.swcrc` file and use the options found there. Alternatively, you can use this plugin's [`swcConfig` option](#swcconfig), providing either a configuration object or a path to your `.swcrc` file.
+Note that the value of some options will be forced for interoperability reasons. See [this section](#ignoredoverridden-swc-options) for more details.
 
 ### Using `Custom Transformers`
 
@@ -663,7 +663,9 @@ This option will only be respected when `"babel"` is being used as the `transpil
 
 Type: `string | Partial<SwcConfig>`
 
-This option will only be respected when `"swc"` is being used as the `transpiler` and can be used to provide a [swc config](https://swc.rs/docs/configuration/swcrc) or a path to one.
+This option will only be respected when `"swc"` is being used as the `transpiler` and can be used to provide an swc config object or a path to a `.swcrc` file. When this option is not used, the plugin will load `.swcrc` inside of `cwd` (see [below](#cwd)).
+
+See the [swc docs](https://swc.rs/docs/configuration/swcrc) and the `Config` type in [this file](https://github.com/swc-project/swc/blob/main/node-swc/src/types.ts) for more information on swc configuration options. Also note that the value of some options will be forced for interoperability reasons. See [this section](#ignoredoverridden-swc-options) for more details.
 
 #### `tsconfig`
 
@@ -783,16 +785,20 @@ The following [Babel options](https://babeljs.io/docs/en/options) will be ignore
 
 ### Ignored/overridden swc options
 
-The following [Babel options](https://swc.rs/docs/configuration/swcrc) will be ignored:
+The following swc options will be ignored:
 
 | Property     | Reason                                                                                                                                                                                                                                 |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sourceMaps` | swc will always be instructed to produce SourceMaps. Rollup then decides whether or not to include them (and if they should be inlined).                                                                                               |
 | `cwd`        | The `cwd` option provided to the plugin will always be used.                                                                                                                                                                           |
-| `cwd`        | See above.                                                                                                                                                                                                                             |
-| `test`       | Rollup itself will decide which files to include in the transformation process based on your code. This plugin itself takes a `include` property which you should use instead if you want to explicitly allow specific files or globs. |
-| `exclude`    | See above                                                                                                                                                                                                                              |
-| `isModule`   | Will always use `true`. Rollup will then decide what to do based on the output format                                                                                                                                                  |
+| `exclude`    | This plugin takes an `exclude` property which you should use instead if you want to explicitly disallow specific files or globs.                                                                                                                                                                                                             |
+| `isModule`   | Will always be set to `true`. Rollup will then decide what to do based on its `output.format` option.                                                                                                                                                  |
+| `jsc.externalHelpers` | Will always be set to `true`.                                                                                                                                                                           |
+| `module.type` | Will always be set to `"es6"`. Rollup will then decide what module system to use based on its `output.format` option.                                                                                                                                                  |
+| `root`        | The `cwd` option provided to the plugin will always be used.                                                                                                                                                                           |
+| `sourceMaps` | swc will always be instructed to produce sourcemaps. Rollup then decides whether or not to include them (and if they should be inlined).                                                                                               |
+| `test`       | Rollup itself will decide which files to include in the transformation process based on your code. This plugin itself takes an `include` property which you should use instead if you want to explicitly allow specific files or globs. |
+
+See the [swc docs](https://swc.rs/docs/configuration/swcrc) and the `Config` type in [this file](https://github.com/swc-project/swc/blob/main/node-swc/src/types.ts) for more information on swc configuration options.
 
 ### Default Babel plugins
 
